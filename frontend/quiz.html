@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Your Shadow Archetype — ShadowMirror</title>
+<meta name="description" content="Which Jungian shadow archetype is secretly running your life? 4 minutes. Uncomfortably accurate.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #090909; --surface: #111111; --surface2: #161616; --border: #1e1e1e;
+    --gold: #9b8060; --gold-light: #c4a97d; --text: #e8e4dc; --text-muted: #888880;
+    --text-dim: #555550; --serif: 'EB Garamond', Georgia, serif; --sans: 'Inter', system-ui, sans-serif;
+    --error: #c0392b;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--serif); font-size: 18px; line-height: 1.7; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+  /* LAYOUT */
+  .quiz-shell { max-width: 640px; margin: 0 auto; padding: 48px 24px 96px; }
+  .quiz-header { text-align: center; margin-bottom: 56px; }
+  .quiz-logo { font-family: var(--sans); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 40px; display: block; text-decoration: none; }
+  .quiz-intro-label { font-family: var(--sans); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+  .quiz-intro-title { font-size: clamp(26px, 4vw, 38px); font-weight: 400; line-height: 1.2; color: #f0ece4; margin-bottom: 20px; }
+  .quiz-intro-body { font-size: 17px; color: var(--text-muted); line-height: 1.7; margin-bottom: 32px; }
+  .btn-start { display: inline-block; background: var(--gold); color: #090909; text-decoration: none; padding: 16px 40px; font-family: var(--sans); font-size: 15px; font-weight: 600; letter-spacing: 0.05em; border-radius: 2px; border: none; cursor: pointer; transition: background 0.2s; }
+  .btn-start:hover { background: var(--gold-light); }
+
+  /* PROGRESS */
+  .progress-bar { width: 100%; height: 2px; background: var(--border); margin-bottom: 48px; border-radius: 1px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--gold); transition: width 0.4s ease; }
+  .progress-label { font-family: var(--sans); font-size: 12px; color: var(--text-dim); text-align: right; margin-bottom: 8px; }
+
+  /* QUESTION */
+  .question-block { display: none; }
+  .question-block.active { display: block; animation: fadeSlide 0.35s ease; }
+  @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .question-num { font-family: var(--sans); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 20px; }
+  .question-text { font-size: clamp(20px, 3vw, 28px); font-weight: 400; color: #f0ece4; line-height: 1.3; margin-bottom: 36px; }
+  .question-sub { font-size: 15px; color: var(--text-dim); font-style: italic; margin-top: -28px; margin-bottom: 32px; }
+
+  /* OPTIONS */
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 40px; }
+  .option { display: flex; align-items: flex-start; gap: 16px; padding: 18px 22px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.2s, background 0.2s; border-radius: 2px; }
+  .option:hover { border-color: var(--gold); background: rgba(155,128,96,0.04); }
+  .option.selected { border-color: var(--gold); background: rgba(155,128,96,0.08); }
+  .option-letter { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--gold); letter-spacing: 0.05em; flex-shrink: 0; margin-top: 2px; }
+  .option-text { font-size: 16px; color: var(--text-muted); line-height: 1.5; }
+  .option.selected .option-text { color: var(--text); }
+
+  /* OPEN TEXT */
+  .open-text { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: var(--serif); font-size: 17px; padding: 20px; border-radius: 2px; resize: vertical; min-height: 120px; transition: border-color 0.2s; outline: none; line-height: 1.6; }
+  .open-text:focus { border-color: var(--gold); }
+  .open-text::placeholder { color: var(--text-dim); }
+
+  /* NAV BUTTONS */
+  .question-nav { display: flex; justify-content: space-between; align-items: center; }
+  .btn-back { font-family: var(--sans); font-size: 14px; color: var(--text-dim); background: none; border: none; cursor: pointer; padding: 0; }
+  .btn-back:hover { color: var(--text-muted); }
+  .btn-next { font-family: var(--sans); font-size: 15px; font-weight: 600; color: #090909; background: var(--gold); border: none; padding: 14px 36px; border-radius: 2px; cursor: pointer; transition: background 0.2s, opacity 0.2s; letter-spacing: 0.04em; }
+  .btn-next:hover:not(:disabled) { background: var(--gold-light); }
+  .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* EMAIL CAPTURE */
+  .email-block { display: none; }
+  .email-block.active { display: block; animation: fadeSlide 0.35s ease; }
+  .email-title { font-size: clamp(22px, 3vw, 32px); color: #f0ece4; margin-bottom: 16px; line-height: 1.3; }
+  .email-body { font-size: 17px; color: var(--text-muted); margin-bottom: 32px; }
+  .field-group { margin-bottom: 16px; }
+  .field-label { font-family: var(--sans); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px; display: block; }
+  .field-input { width: 100%; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-family: var(--sans); font-size: 16px; padding: 14px 18px; border-radius: 2px; outline: none; transition: border-color 0.2s; }
+  .field-input:focus { border-color: var(--gold); }
+  .field-input::placeholder { color: var(--text-dim); }
+  .field-error { font-family: var(--sans); font-size: 13px; color: var(--error); margin-top: 6px; display: none; }
+  .privacy-note { font-family: var(--sans); font-size: 13px; color: var(--text-dim); margin-top: 12px; }
+  .btn-submit { width: 100%; margin-top: 24px; font-family: var(--sans); font-size: 16px; font-weight: 600; color: #090909; background: var(--gold); border: none; padding: 18px; border-radius: 2px; cursor: pointer; transition: background 0.2s; letter-spacing: 0.04em; }
+  .btn-submit:hover:not(:disabled) { background: var(--gold-light); }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* RESULT */
+  .result-block { display: none; }
+  .result-block.active { display: block; animation: fadeSlide 0.4s ease; }
+  .result-eyebrow { font-family: var(--sans); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+  .result-archetype { font-size: clamp(28px, 5vw, 48px); color: var(--gold-light); font-style: italic; margin-bottom: 32px; line-height: 1.2; }
+  .result-description { font-size: 18px; color: var(--text-muted); line-height: 1.8; margin-bottom: 40px; }
+  .result-cta-box { background: var(--surface); border: 1px solid var(--border); padding: 40px; margin-bottom: 24px; }
+  .result-cta-title { font-size: 22px; color: #f0ece4; margin-bottom: 12px; }
+  .result-cta-body { font-size: 16px; color: var(--text-muted); margin-bottom: 28px; }
+  .btn-checkout { display: block; width: 100%; text-align: center; background: var(--gold); color: #090909; text-decoration: none; padding: 18px; font-family: var(--sans); font-size: 15px; font-weight: 600; border-radius: 2px; letter-spacing: 0.04em; transition: background 0.2s; }
+  .btn-checkout:hover { background: var(--gold-light); }
+  .result-skip { font-family: var(--sans); font-size: 13px; color: var(--text-dim); text-align: center; }
+  .result-skip a { color: var(--text-muted); }
+
+  /* LOADING */
+  .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(9,9,9,0.9); z-index: 200; align-items: center; justify-content: center; flex-direction: column; gap: 24px; }
+  .loading-overlay.active { display: flex; }
+  .spinner { width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-family: var(--sans); font-size: 14px; color: var(--text-dim); letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Analyzing your archetype...</div>
+</div>
+
+<div class="quiz-shell">
+  <a href="/index.html" class="quiz-logo">ShadowMirror 🪞</a>
+
+  <!-- INTRO -->
+  <div id="introBlock" class="quiz-header">
+    <div class="quiz-intro-label">Shadow Archetype Assessment</div>
+    <h1 class="quiz-intro-title">Which shadow archetype is secretly running your life?</h1>
+    <p class="quiz-intro-body">Carl Jung identified a part of every human psyche called the Shadow — the aspects of ourselves we've hidden, denied, or never been allowed to develop.<br><br>It doesn't disappear. It runs.<br><br>This 5-question assessment was designed to surface which archetype is most active in your unconscious right now. It takes 4 minutes. The results are uncomfortably accurate.</p>
+    <button class="btn-start" onclick="startQuiz()">Begin the assessment →</button>
+  </div>
+
+  <!-- PROGRESS -->
+  <div id="progressSection" style="display:none;">
+    <div class="progress-label" id="progressLabel">Question 1 of 5</div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:20%"></div></div>
+  </div>
+
+  <!-- QUESTION 1 -->
+  <div class="question-block" id="q1Block">
+    <div class="question-num">Question 01 / 05</div>
+    <div class="question-text">When something goes wrong in a relationship, your first internal reaction is most often:</div>
+    <div class="options" id="q1Options">
+      <div class="option" onclick="selectOption('q1','A',this)"><span class="option-letter">A</span><span class="option-text">I knew this would happen. Things always fall apart for me.</span></div>
+      <div class="option" onclick="selectOption('q1','B',this)"><span class="option-letter">B</span><span class="option-text">What did I do to cause this? I need to fix it.</span></div>
+      <div class="option" onclick="selectOption('q1','C',this)"><span class="option-letter">C</span><span class="option-text">I need to get control of this situation immediately.</span></div>
+      <div class="option" onclick="selectOption('q1','D',this)"><span class="option-letter">D</span><span class="option-text">Fine. I didn't need this anyway.</span></div>
+      <div class="option" onclick="selectOption('q1','E',this)"><span class="option-letter">E</span><span class="option-text">Internal shutdown — go quiet, analyze it later alone.</span></div>
+      <div class="option" onclick="selectOption('q1','F',this)"><span class="option-letter">F</span><span class="option-text">Make a joke. Lighten it. Move past it quickly.</span></div>
+    </div>
+    <div class="question-nav">
+      <span></span>
+      <button class="btn-next" id="q1Next" disabled onclick="nextQuestion(2)">Next →</button>
+    </div>
+  </div>
+
+  <!-- QUESTION 2 -->
+  <div class="question-block" id="q2Block">
+    <div class="question-num">Question 02 / 05</div>
+    <div class="question-text">Complete this sentence honestly: When I succeed at something, I usually feel:</div>
+    <div class="options" id="q2Options">
+      <div class="option" onclick="selectOption('q2','A',this)"><span class="option-letter">A</span><span class="option-text">Relieved — until the next thing I have to not fail at.</span></div>
+      <div class="option" onclick="selectOption('q2','B',this)"><span class="option-letter">B</span><span class="option-text">Surprised, honestly. Like it might not last.</span></div>
+      <div class="option" onclick="selectOption('q2','C',this)"><span class="option-letter">C</span><span class="option-text">Good — but I immediately start thinking about what comes next.</span></div>
+      <div class="option" onclick="selectOption('q2','D',this)"><span class="option-letter">D</span><span class="option-text">Like I proved something. To someone.</span></div>
+      <div class="option" onclick="selectOption('q2','E',this)"><span class="option-letter">E</span><span class="option-text">Briefly happy, then a little empty. Like the goal post moved.</span></div>
+      <div class="option" onclick="selectOption('q2','F',this)"><span class="option-letter">F</span><span class="option-text">Slightly fraudulent. Like someone might figure out it was luck.</span></div>
+    </div>
+    <div class="question-nav">
+      <button class="btn-back" onclick="prevQuestion(1)">← Back</button>
+      <button class="btn-next" id="q2Next" disabled onclick="nextQuestion(3)">Next →</button>
+    </div>
+  </div>
+
+  <!-- QUESTION 3 -->
+  <div class="question-block" id="q3Block">
+    <div class="question-num">Question 03 / 05</div>
+    <div class="question-text">The thing you most judge in other people is probably:</div>
+    <div class="question-sub">(Jung's observation: what we judge in others is what we cannot accept in ourselves.)</div>
+    <div class="options" id="q3Options">
+      <div class="option" onclick="selectOption('q3','A',this)"><span class="option-letter">A</span><span class="option-text">People who need too much reassurance.</span></div>
+      <div class="option" onclick="selectOption('q3','B',this)"><span class="option-letter">B</span><span class="option-text">People who are selfish or don't consider others.</span></div>
+      <div class="option" onclick="selectOption('q3','C',this)"><span class="option-letter">C</span><span class="option-text">People who are weak, indecisive, or passive.</span></div>
+      <div class="option" onclick="selectOption('q3','D',this)"><span class="option-letter">D</span><span class="option-text">People who are fake or emotionally unavailable.</span></div>
+      <div class="option" onclick="selectOption('q3','E',this)"><span class="option-letter">E</span><span class="option-text">People who are loud, dramatic, or attention-seeking.</span></div>
+      <div class="option" onclick="selectOption('q3','F',this)"><span class="option-letter">F</span><span class="option-text">People who take themselves too seriously.</span></div>
+    </div>
+    <div class="question-nav">
+      <button class="btn-back" onclick="prevQuestion(2)">← Back</button>
+      <button class="btn-next" id="q3Next" disabled onclick="nextQuestion(4)">Next →</button>
+    </div>
+  </div>
+
+  <!-- QUESTION 4 -->
+  <div class="question-block" id="q4Block">
+    <div class="question-num">Question 04 / 05</div>
+    <div class="question-text">If the people closest to you were honest, they might say you sometimes:</div>
+    <div class="options" id="q4Options">
+      <div class="option" onclick="selectOption('q4','A',this)"><span class="option-letter">A</span><span class="option-text">Expect the worst before it happens.</span></div>
+      <div class="option" onclick="selectOption('q4','B',this)"><span class="option-letter">B</span><span class="option-text">Sacrifice yourself when you don't need to.</span></div>
+      <div class="option" onclick="selectOption('q4','C',this)"><span class="option-letter">C</span><span class="option-text">Try to control things you can't control.</span></div>
+      <div class="option" onclick="selectOption('q4','D',this)"><span class="option-letter">D</span><span class="option-text">Push people away when they get too close.</span></div>
+      <div class="option" onclick="selectOption('q4','E',this)"><span class="option-letter">E</span><span class="option-text">Are hard on yourself in ways that seem disproportionate.</span></div>
+      <div class="option" onclick="selectOption('q4','F',this)"><span class="option-letter">F</span><span class="option-text">Use humor or deflection to avoid being vulnerable.</span></div>
+    </div>
+    <div class="question-nav">
+      <button class="btn-back" onclick="prevQuestion(3)">← Back</button>
+      <button class="btn-next" id="q4Next" disabled onclick="nextQuestion(5)">Next →</button>
+    </div>
+  </div>
+
+  <!-- QUESTION 5 (open) -->
+  <div class="question-block" id="q5Block">
+    <div class="question-num">Question 05 / 05</div>
+    <div class="question-text">What would change in your life if you completely stopped being afraid?</div>
+    <div class="question-sub">Write as much or as little as you need. There is no wrong answer — only an honest one.</div>
+    <textarea class="open-text" id="q5Input" placeholder="Take your time with this one..." oninput="checkQ5()"></textarea>
+    <div class="question-nav" style="margin-top:20px;">
+      <button class="btn-back" onclick="prevQuestion(4)">← Back</button>
+      <button class="btn-next" id="q5Next" disabled onclick="showEmailCapture()">See my archetype →</button>
+    </div>
+  </div>
+
+  <!-- EMAIL CAPTURE -->
+  <div class="email-block" id="emailBlock">
+    <div class="result-eyebrow">One last step</div>
+    <div class="email-title">Where should we send your full archetype analysis?</div>
+    <div class="email-body">Your result includes your archetype name, a detailed description of how it operates in your life, and your first journal prompt — built from your answers.</div>
+    <div class="field-group">
+      <label class="field-label" for="emailInput">Email address</label>
+      <input class="field-input" type="email" id="emailInput" placeholder="you@example.com" oninput="validateEmail()">
+      <div class="field-error" id="emailError">Please enter a valid email address.</div>
+    </div>
+    <div class="field-group">
+      <label class="field-label" for="nameInput">First name</label>
+      <input class="field-input" type="text" id="nameInput" placeholder="Your first name">
+    </div>
+    <div class="privacy-note">No spam. Unsubscribe anytime. We'll send your archetype analysis immediately.</div>
+    <button class="btn-submit" id="submitBtn" disabled onclick="submitQuiz()">Send my archetype analysis →</button>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-block" id="resultBlock">
+    <div class="result-eyebrow">Your shadow archetype</div>
+    <div class="result-archetype" id="resultArchetype"></div>
+    <div class="result-description" id="resultDescription"></div>
+    <div class="result-cta-box">
+      <div class="result-cta-title">Your full analysis is in your inbox.</div>
+      <div class="result-cta-body">Ready to start the work? Your first week is free. One prompt a day. A weekly portrait built from what you actually write.</div>
+      <a href="#" class="btn-checkout" id="checkoutBtn">Start your 7-day free trial →</a>
+    </div>
+    <div class="result-skip">Not ready yet? <a href="/index.html">Learn more about ShadowMirror →</a></div>
+  </div>
+
+</div><!-- end quiz-shell -->
+
+<script>
+const answers = { q1: null, q2: null, q3: null, q4: null, q5: '' };
+
+const ARCHETYPES = {
+  Saboteur: {
+    display: 'The Saboteur',
+    description: `The Saboteur doesn't destroy your life because it hates you. It destroys your life because it learned, early, that the pain of losing something you love is worse than never having it at all. So it acts first.\n\nYou might recognize it as starting conflicts right when things get good. Leaving before you can be left. Underperforming just enough to have an excuse. Choosing someone unavailable and calling it chemistry.\n\nThis is not a character flaw. It is a survival strategy that has outlived its usefulness.`
+  },
+  Orphan: {
+    display: 'The Orphan',
+    description: `The Orphan doesn't struggle to connect — it's gifted at it. The problem is that connection comes at a cost: you. You shape-shift. You become whoever the room needs you to be.\n\nYou're excellent at reading people. You're terrible at knowing what you actually want. The Orphan's deepest fear isn't abandonment — it's being known and then left. So it stays slightly invisible, slightly adjustable, always just slightly less than fully present.`
+  },
+  Controller: {
+    display: 'The Controller',
+    description: `The Controller learned early that chaos is dangerous. Not a metaphor — literally dangerous. So it built systems. Routines. Standards. Expectations. It calls this high performance. The people who love it call it exhausting.\n\nThe Controller doesn't need to control everything because it's a control freak. It needs to control everything because the alternative — trusting someone else with something that matters — feels like standing at the edge of something with no railing.`
+  },
+  Victim: {
+    display: 'The Victim',
+    description: `The Victim is the most misunderstood archetype because it doesn't look like weakness from the inside — it looks like clarity. Clarity about who's responsible, what went wrong, why things keep not working.\n\nWhat it actually is: power through powerlessness. If nothing is your fault, nothing can be required of you. If you're always the injured party, you're always protected from the terrifying question of what would happen if you actually tried and it still failed.`
+  },
+  Trickster: {
+    display: 'The Trickster',
+    description: `The Trickster is the funniest person in the room. Also the most unseen. Humor is armor — not the cheap kind, but the sophisticated kind that looks like openness while keeping everyone at exactly the right distance.\n\nThe Trickster deflects with wit, reframes with irony, and exits before things get heavy. It's brilliant at making connection feel easy. It's terrified of what real connection actually requires.`
+  },
+  Tyrant: {
+    display: 'The Tyrant',
+    description: `The Tyrant doesn't lead through fear because it's cruel. It leads through fear because fear is the only relationship it learned to trust. High achiever. Driven. Sets standards others can't meet — including itself.\n\nThe Tyrant's deepest secret: it's not afraid of failure. It's afraid of the moment achievement stops and all that's left is the person underneath it, unadorned, unimpressive, ordinary. So it keeps moving. Keeps proving. Keeps performing competence as identity.`
+  }
+};
+
+const Q1_MAP = { A:'Victim', B:'Orphan', C:'Controller', D:'Saboteur', E:'Saboteur', F:'Trickster' };
+const Q2_MAP = { A:'Controller', B:'Orphan', C:'Tyrant', D:'Tyrant', E:'Victim', F:'Saboteur' };
+const Q3_MAP = { A:'Orphan', B:'Tyrant', C:'Victim', D:'Saboteur', E:'Trickster', F:'Trickster' };
+const Q4_MAP = { A:'Victim', B:'Orphan', C:'Controller', D:'Saboteur', E:'Tyrant', F:'Trickster' };
+
+function scoreQuiz() {
+  const scores = { Saboteur:0, Orphan:0, Controller:0, Victim:0, Trickster:0, Tyrant:0 };
+  if (Q1_MAP[answers.q1]) scores[Q1_MAP[answers.q1]] += 3;
+  if (Q2_MAP[answers.q2]) scores[Q2_MAP[answers.q2]] += 3;
+  if (Q3_MAP[answers.q3]) scores[Q3_MAP[answers.q3]] += 2;
+  if (Q4_MAP[answers.q4]) scores[Q4_MAP[answers.q4]] += 2;
+  return Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
+}
+
+function startQuiz() {
+  document.getElementById('introBlock').style.display = 'none';
+  document.getElementById('progressSection').style.display = 'block';
+  showQuestion(1);
+}
+
+function showQuestion(n) {
+  document.querySelectorAll('.question-block').forEach(b => b.classList.remove('active'));
+  const block = document.getElementById(`q${n}Block`);
+  if (block) block.classList.add('active');
+  updateProgress(n);
+}
+
+function updateProgress(n) {
+  const pct = (n / 5) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `Question ${n} of 5`;
+}
+
+function selectOption(q, val, el) {
+  document.querySelectorAll(`#${q}Options .option`).forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[q] = val;
+  document.getElementById(`${q}Next`).disabled = false;
+}
+
+function nextQuestion(n) { showQuestion(n); }
+function prevQuestion(n) { showQuestion(n); }
+
+function checkQ5() {
+  const val = document.getElementById('q5Input').value.trim();
+  answers.q5 = val;
+  document.getElementById('q5Next').disabled = val.length < 10;
+}
+
+function showEmailCapture() {
+  document.querySelectorAll('.question-block').forEach(b => b.classList.remove('active'));
+  document.getElementById('progressSection').style.display = 'none';
+  document.getElementById('emailBlock').classList.add('active');
+}
+
+function validateEmail() {
+  const val = document.getElementById('emailInput').value.trim();
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  document.getElementById('submitBtn').disabled = !valid;
+  document.getElementById('emailError').style.display = valid || !val ? 'none' : 'block';
+  return valid;
+}
+
+async function submitQuiz() {
+  if (!validateEmail()) return;
+
+  const email = document.getElementById('emailInput').value.trim();
+  const firstName = document.getElementById('nameInput').value.trim();
+  const archetype = scoreQuiz();
+
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.add('active');
+
+  const messages = ['Analyzing your answers...', 'Identifying your archetype...', 'Building your profile...'];
+  let mi = 0;
+  const ticker = setInterval(() => { mi = (mi+1) % messages.length; document.getElementById('loadingText').textContent = messages[mi]; }, 1200);
+
+  try {
+    // Submit to backend (gracefully fallback if no backend)
+    const API = window.SHADOWMIRROR_API || '';
+    let checkoutUrl = '/#start';
+
+    if (API) {
+      const res = await fetch(`${API}/quiz/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, firstName, q1: answers.q1, q2: answers.q2, q3: answers.q3, q4: answers.q4, q5: answers.q5 })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        checkoutUrl = data.checkout_url || checkoutUrl;
+      }
+    }
+
+    clearInterval(ticker);
+    loading.classList.remove('active');
+    showResult(archetype, checkoutUrl);
+  } catch(err) {
+    clearInterval(ticker);
+    loading.classList.remove('active');
+    showResult(archetype, '/#start');
+  }
+}
+
+function showResult(archetype, checkoutUrl) {
+  document.getElementById('emailBlock').classList.remove('active');
+  const block = document.getElementById('resultBlock');
+  block.classList.add('active');
+
+  const data = ARCHETYPES[archetype];
+  document.getElementById('resultArchetype').textContent = data.display;
+  document.getElementById('resultDescription').innerHTML = data.description.split('\n\n').map(p => `<p>${p}</p>`).join('');
+  document.getElementById('checkoutBtn').href = checkoutUrl;
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

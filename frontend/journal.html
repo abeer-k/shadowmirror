@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Today's Entry — ShadowMirror</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg:#090909; --surface:#111111; --border:#1e1e1e; --gold:#9b8060; --gold-light:#c4a97d; --text:#e8e4dc; --text-muted:#888880; --text-dim:#555550; --serif:'EB Garamond',Georgia,serif; --sans:'Inter',system-ui,sans-serif; }
+  body { background:var(--bg); color:var(--text); font-family:var(--serif); font-size:18px; line-height:1.7; -webkit-font-smoothing:antialiased; min-height:100vh; }
+
+  .shell { max-width:640px; margin:0 auto; padding:56px 24px 96px; }
+  .logo { font-family:var(--sans); font-size:12px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); text-decoration:none; display:block; margin-bottom:56px; }
+
+  .prompt-label { font-family:var(--sans); font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:16px; }
+  .prompt-display { font-size:clamp(22px,3.5vw,32px); color:#f0ece4; line-height:1.3; margin-bottom:48px; font-weight:400; }
+
+  .streak-badge { font-family:var(--sans); font-size:13px; color:var(--text-dim); margin-bottom:32px; }
+  .streak-badge strong { color:var(--gold); }
+
+  textarea { width:100%; min-height:320px; background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:var(--serif); font-size:18px; line-height:1.7; padding:28px 32px; border-radius:2px; resize:vertical; outline:none; transition:border-color 0.2s; }
+  textarea:focus { border-color:var(--gold); }
+  textarea::placeholder { color:var(--text-dim); font-style:italic; }
+
+  .word-count { font-family:var(--sans); font-size:13px; color:var(--text-dim); text-align:right; margin-top:8px; }
+
+  .email-row { display:flex; gap:12px; margin-top:24px; }
+  .email-input { flex:1; background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:var(--sans); font-size:15px; padding:14px 18px; border-radius:2px; outline:none; transition:border-color 0.2s; }
+  .email-input:focus { border-color:var(--gold); }
+  .email-input::placeholder { color:var(--text-dim); }
+
+  .btn-submit { font-family:var(--sans); font-size:15px; font-weight:600; color:#090909; background:var(--gold); border:none; padding:14px 32px; border-radius:2px; cursor:pointer; transition:background 0.2s; white-space:nowrap; letter-spacing:0.04em; }
+  .btn-submit:hover:not(:disabled) { background:var(--gold-light); }
+  .btn-submit:disabled { opacity:0.4; cursor:not-allowed; }
+
+  .note { font-family:var(--sans); font-size:13px; color:var(--text-dim); margin-top:16px; line-height:1.5; }
+
+  /* SUCCESS */
+  .success-block { display:none; animation:fadeIn 0.4s ease; }
+  .success-block.active { display:block; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .success-eyebrow { font-family:var(--sans); font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:16px; }
+  .success-title { font-size:28px; color:#f0ece4; margin-bottom:24px; line-height:1.3; }
+  .prompt-next-box { background:var(--surface); border-left:3px solid var(--gold); padding:24px 28px; margin:32px 0; }
+  .prompt-next-label { font-family:var(--sans); font-size:11px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim); margin-bottom:12px; }
+  .prompt-next-text { font-size:20px; font-style:italic; color:var(--text); }
+  .pattern-alert { background:#1a1512; border-left:2px solid var(--gold); padding:16px 20px; margin:24px 0; font-size:16px; color:#a8a49c; }
+  .pattern-label { font-family:var(--sans); font-size:10px; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-dim); margin-bottom:8px; }
+
+  /* ERROR */
+  .error-msg { background:#1a0a0a; border:1px solid #3a1515; color:#c08080; font-family:var(--sans); font-size:14px; padding:14px 18px; border-radius:2px; margin-top:16px; display:none; }
+  .error-msg.active { display:block; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <a href="/index.html" class="logo">ShadowMirror 🪞</a>
+
+  <!-- WRITE STATE -->
+  <div id="writeBlock">
+    <div class="prompt-label">Today's prompt</div>
+    <div class="prompt-display" id="promptDisplay">Loading your prompt...</div>
+
+    <div class="streak-badge" id="streakBadge"></div>
+
+    <textarea id="entryText" placeholder="Write here. The AI will read every word without judgment." oninput="updateWordCount()"></textarea>
+    <div class="word-count" id="wordCount">0 words</div>
+
+    <div class="email-row">
+      <input class="email-input" type="email" id="emailInput" placeholder="Your email address" oninput="checkReady()">
+      <button class="btn-submit" id="submitBtn" disabled onclick="submitEntry()">Submit entry →</button>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="note">Your entry is analyzed privately. It is never shared, never used for training, never read by a human.</div>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div class="success-block" id="successBlock">
+    <div class="success-eyebrow">Entry received ✓</div>
+    <div class="success-title" id="successTitle">Day <span id="newStreak">1</span> complete.</div>
+
+    <div id="patternAlertBlock" style="display:none;">
+      <div class="pattern-alert">
+        <div class="pattern-label">Pattern observed</div>
+        <div id="patternAlertText"></div>
+      </div>
+    </div>
+
+    <div class="prompt-next-box">
+      <div class="prompt-next-label">Tomorrow's question</div>
+      <div class="prompt-next-text" id="nextPromptText"></div>
+    </div>
+
+    <p style="color:var(--text-dim);font-size:16px;">You'll receive this by email too. Come back tomorrow and write.</p>
+  </div>
+</div>
+
+<script>
+const API = window.SHADOWMIRROR_API || '';
+
+// Load today's prompt from URL param or default
+const params = new URLSearchParams(window.location.search);
+const emailFromLink = params.get('email') || '';
+if (emailFromLink) document.getElementById('emailInput').value = emailFromLink;
+
+const DEFAULT_PROMPTS = [
+  "What is the oldest story you tell yourself about why things don't work out?",
+  "Describe a moment this week when you made yourself smaller than you needed to be.",
+  "What do you want that you've never said out loud to anyone?",
+  "When did you last feel genuinely seen? What made that possible — or what prevented it?",
+  "What are you tolerating right now that you've convinced yourself is acceptable?",
+];
+
+async function loadPrompt() {
+  const email = emailFromLink;
+  if (email && API) {
+    try {
+      const res = await fetch(`${API}/journal/prompt?email=${encodeURIComponent(email)}`);
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('promptDisplay').textContent = data.prompt;
+        if (data.streak > 0) {
+          document.getElementById('streakBadge').innerHTML = `<strong>${data.streak}-day</strong> streak`;
+        }
+        return;
+      }
+    } catch(e) {}
+  }
+  // Fallback: rotate default prompts by day of week
+  const day = new Date().getDay();
+  document.getElementById('promptDisplay').textContent = DEFAULT_PROMPTS[day % DEFAULT_PROMPTS.length];
+}
+
+function updateWordCount() {
+  const text = document.getElementById('entryText').value.trim();
+  const words = text ? text.split(/\s+/).length : 0;
+  document.getElementById('wordCount').textContent = `${words} word${words === 1 ? '' : 's'}`;
+  checkReady();
+}
+
+function checkReady() {
+  const entry = document.getElementById('entryText').value.trim();
+  const email = document.getElementById('emailInput').value.trim();
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  document.getElementById('submitBtn').disabled = entry.length < 30 || !emailValid;
+}
+
+async function submitEntry() {
+  const entry = document.getElementById('entryText').value.trim();
+  const email = document.getElementById('emailInput').value.trim();
+
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').textContent = 'Analyzing...';
+  document.getElementById('errorMsg').classList.remove('active');
+
+  if (!API) {
+    // Demo mode — show success with sample data
+    showSuccess({
+      streak: 1,
+      tomorrow_prompt: "What do you want that you've never said out loud to anyone?",
+      pattern_alert: null,
+    });
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/journal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, entry })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Submission failed');
+    showSuccess(data);
+  } catch(err) {
+    document.getElementById('submitBtn').disabled = false;
+    document.getElementById('submitBtn').textContent = 'Submit entry →';
+    const errEl = document.getElementById('errorMsg');
+    errEl.textContent = err.message || 'Something went wrong. Please try again.';
+    errEl.classList.add('active');
+  }
+}
+
+function showSuccess({ streak, tomorrow_prompt, pattern_alert }) {
+  document.getElementById('writeBlock').style.display = 'none';
+  document.getElementById('newStreak').textContent = streak;
+
+  const specialMessages = {
+    7: "Seven days. Something shifts at seven days. Watch for it.",
+    30: "Thirty days. You've done something most people never do.",
+    90: "Ninety days. The shadow is integrating.",
+  };
+  if (specialMessages[streak]) {
+    document.getElementById('successTitle').textContent = specialMessages[streak];
+  } else {
+    document.getElementById('successTitle').textContent = `Day ${streak} complete.`;
+  }
+
+  document.getElementById('nextPromptText').textContent = tomorrow_prompt;
+
+  if (pattern_alert) {
+    document.getElementById('patternAlertBlock').style.display = 'block';
+    document.getElementById('patternAlertText').textContent = pattern_alert;
+  }
+
+  document.getElementById('successBlock').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+loadPrompt();
+</script>
+</body>
+</html>

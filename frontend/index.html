@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShadowMirror — The part of you that keeps sabotaging everything finally has a name.</title>
+<meta name="description" content="ShadowMirror is an AI journaling system that identifies the unconscious patterns running your life — and gives them back to you, clearly, every week.">
+<meta property="og:title" content="Your shadow has a name.">
+<meta property="og:description" content="Find your Jungian shadow archetype. 4 minutes. Free.">
+<meta property="og:image" content="/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #090909;
+    --surface: #111111;
+    --surface2: #161616;
+    --border: #1e1e1e;
+    --gold: #9b8060;
+    --gold-light: #c4a97d;
+    --text: #e8e4dc;
+    --text-muted: #888880;
+    --text-dim: #555550;
+    --serif: 'EB Garamond', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 18px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    padding: 20px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: linear-gradient(to bottom, rgba(9,9,9,0.95), transparent);
+    backdrop-filter: blur(8px);
+  }
+  .nav-logo { font-family: var(--sans); font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); text-decoration: none; }
+  .nav-cta { font-family: var(--sans); font-size: 13px; color: var(--text-muted); text-decoration: none; border: 1px solid var(--border); padding: 8px 20px; border-radius: 2px; transition: all 0.2s; }
+  .nav-cta:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 120px 24px 80px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 40% at 50% 40%, rgba(155,128,96,0.06), transparent);
+    pointer-events: none;
+  }
+  .hero-eyebrow { font-family: var(--sans); font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); margin-bottom: 32px; }
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 400; line-height: 1.15;
+    color: #f0ece4;
+    max-width: 820px;
+    margin: 0 auto 32px;
+  }
+  .hero h1 em { font-style: italic; color: var(--gold-light); }
+  .hero-sub {
+    font-size: 19px; color: var(--text-muted);
+    max-width: 520px; margin: 0 auto 48px; line-height: 1.6;
+  }
+  .btn-primary {
+    display: inline-block;
+    background: var(--gold);
+    color: #090909;
+    text-decoration: none;
+    padding: 16px 40px;
+    font-family: var(--sans); font-size: 15px; font-weight: 600; letter-spacing: 0.05em;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.1s;
+    border: none; cursor: pointer;
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .hero-meta { font-family: var(--sans); font-size: 13px; color: var(--text-dim); margin-top: 20px; }
+
+  /* SECTION COMMON */
+  section { padding: 96px 24px; }
+  .container { max-width: 720px; margin: 0 auto; }
+  .container-wide { max-width: 960px; margin: 0 auto; }
+  .label { font-family: var(--sans); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; }
+  h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 400; line-height: 1.2; color: #f0ece4; margin-bottom: 32px; }
+  p { color: var(--text-muted); margin-bottom: 20px; }
+  p:last-child { margin-bottom: 0; }
+
+  /* PROBLEM */
+  .problem { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .problem p { font-size: 20px; line-height: 1.8; color: #b0aca4; }
+  .problem p strong { color: var(--text); font-weight: 400; }
+
+  /* HOW IT WORKS */
+  .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 48px; }
+  .how-card { background: var(--surface); padding: 40px 36px; }
+  .how-card .freq { font-family: var(--sans); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 24px; }
+  .how-card h3 { font-size: 22px; font-weight: 400; color: var(--text); margin-bottom: 16px; }
+  .how-card p { font-size: 16px; }
+
+  /* ARCHETYPES */
+  .archetypes { background: var(--surface); border-top: 1px solid var(--border); }
+  .arch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 48px; }
+  .arch-card { background: var(--bg); padding: 32px 28px; cursor: default; transition: background 0.2s; }
+  .arch-card:hover { background: var(--surface2); }
+  .arch-name { font-size: 15px; color: var(--gold); font-family: var(--sans); font-weight: 500; margin-bottom: 12px; }
+  .arch-desc { font-size: 15px; color: var(--text-dim); line-height: 1.6; }
+  .arch-cta { text-align: center; margin-top: 48px; }
+  .arch-cta p { font-size: 15px; margin-bottom: 24px; }
+
+  /* PORTRAIT SAMPLE */
+  .portrait-sample {
+    border: 1px solid var(--border);
+    padding: 48px;
+    margin-top: 48px;
+    position: relative;
+  }
+  .portrait-sample::before { content: 'SAMPLE PORTRAIT'; font-family: var(--sans); font-size: 10px; letter-spacing: 0.2em; color: var(--text-dim); position: absolute; top: -6px; left: 24px; background: var(--bg); padding: 0 8px; }
+  .portrait-week { font-family: var(--sans); font-size: 11px; color: var(--text-dim); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 16px; }
+  .portrait-title { font-size: 24px; font-style: italic; color: var(--gold-light); margin-bottom: 32px; line-height: 1.3; }
+  .portrait-section { margin-bottom: 32px; }
+  .portrait-section-label { font-family: var(--sans); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+  .shadow-voice { background: var(--surface2); border-left: 2px solid var(--border); padding: 24px 28px; }
+  .shadow-voice p { font-style: italic; color: #888880; font-size: 17px; }
+  .integration-q { background: var(--surface); border: 1px solid var(--border); padding: 24px 28px; }
+  .integration-q p { font-size: 19px; font-style: italic; color: var(--text); margin: 0; }
+
+  /* PRICING */
+  .pricing { background: var(--surface); border-top: 1px solid var(--border); }
+  .pricing-card { border: 1px solid var(--border); padding: 48px; max-width: 480px; margin: 48px auto 0; text-align: center; }
+  .price-main { font-size: 52px; color: var(--text); line-height: 1; margin-bottom: 4px; }
+  .price-period { font-family: var(--sans); font-size: 14px; color: var(--text-dim); margin-bottom: 32px; }
+  .price-or { font-family: var(--sans); font-size: 13px; color: var(--text-dim); margin: 20px 0; }
+  .price-annual { font-family: var(--sans); font-size: 15px; color: var(--text-muted); text-decoration: none; display: block; margin-bottom: 32px; }
+  .price-annual:hover { color: var(--gold); }
+  .features { text-align: left; margin-bottom: 40px; list-style: none; }
+  .features li { font-family: var(--sans); font-size: 14px; color: var(--text-muted); padding: 10px 0; border-bottom: 1px solid var(--border); display: flex; gap: 12px; }
+  .features li::before { content: '✦'; color: var(--gold); flex-shrink: 0; }
+  .guarantee { font-family: var(--sans); font-size: 13px; color: var(--text-dim); margin-top: 24px; line-height: 1.6; }
+
+  /* FOOTER */
+  footer {
+    padding: 48px 24px;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .footer-logo { font-family: var(--sans); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-dim); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-family: var(--sans); font-size: 13px; color: var(--text-dim); text-decoration: none; }
+  .footer-links a:hover { color: var(--text-muted); }
+  .footer-disclaimer { font-family: var(--sans); font-size: 12px; color: var(--text-dim); width: 100%; }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+  @media (max-width: 640px) {
+    nav { padding: 16px 20px; }
+    .how-grid, .arch-grid { grid-template-columns: 1fr; }
+    .portrait-sample { padding: 32px 24px; }
+    footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">ShadowMirror 🪞</a>
+  <a href="/quiz.html" class="nav-cta">Take the free quiz →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-eyebrow">Jungian Shadow Work · AI-Powered · Daily Journaling</p>
+  <h1>The part of you that keeps <em>sabotaging everything</em> finally has a name.</h1>
+  <p class="hero-sub">ShadowMirror is an AI journaling system that identifies the unconscious patterns running your life — and gives them back to you, clearly, every week.</p>
+  <a href="/quiz.html" class="btn-primary">Find Your Shadow Archetype — Free →</a>
+  <p class="hero-meta">4 minutes · No credit card required to see results · 2,400+ archetypes identified</p>
+</section>
+
+<hr class="divider">
+
+<!-- THE PROBLEM -->
+<section class="problem">
+  <div class="container">
+    <p>Most people live in a gap.</p>
+    <p>Between <strong>who they intend to be</strong>, and who they keep becoming.</p>
+    <p>They work on it. They read the books. They go to therapy for a while. They get better — and then something happens, and the old pattern comes back, unchanged, wearing a new outfit.</p>
+    <p>The reason isn't weakness.</p>
+    <p><strong>The reason is that the pattern lives somewhere they've never looked.</strong></p>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section>
+  <div class="container-wide">
+    <div class="label">How it works</div>
+    <h2>One question a day.<br>A full portrait every week.</h2>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="freq">Daily</div>
+        <h3>One precision prompt</h3>
+        <p>Each morning, you receive one journal prompt — engineered to surface what you actually think, not what you want to think. Write for 5 minutes or 50. The AI reads both the same way.</p>
+      </div>
+      <div class="how-card">
+        <div class="freq">Weekly</div>
+        <h3>Your Shadow Portrait</h3>
+        <p>Every Sunday, your week's entries are analyzed and returned to you as a 400-word portrait: the patterns that ran your week, the archetype most active, and the question designed to move you forward.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHETYPES -->
+<section class="archetypes">
+  <div class="container-wide">
+    <div class="label">The six archetypes</div>
+    <h2>Which one is running things<br>when you're not paying attention?</h2>
+    <div class="arch-grid">
+      <div class="arch-card">
+        <div class="arch-name">The Saboteur</div>
+        <div class="arch-desc">Sets things on fire right before they get good. Learned that the pain of losing something you love is worse than never having it at all.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-name">The Orphan</div>
+        <div class="arch-desc">Shape-shifts to belong. Excellent at reading people. Terrible at knowing what it actually wants.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-name">The Controller</div>
+        <div class="arch-desc">Learned early that chaos is dangerous. Builds systems, standards, expectations. Calls it high performance. The people who love it call it exhausting.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-name">The Victim</div>
+        <div class="arch-desc">Power through powerlessness. If nothing is your fault, nothing can be required of you. Brilliant solution to an old problem.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-name">The Trickster</div>
+        <div class="arch-desc">Funniest person in the room. Also the most unseen. Humor as armor — sophisticated enough to look like openness.</div>
+      </div>
+      <div class="arch-card">
+        <div class="arch-name">The Tyrant</div>
+        <div class="arch-desc">High achiever. Driven. Terrified of the moment achievement stops and all that's left is the person underneath it.</div>
+      </div>
+    </div>
+    <div class="arch-cta">
+      <p>Take the 4-minute quiz to find yours.</p>
+      <a href="/quiz.html" class="btn-primary">Find My Archetype — Free →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PORTRAIT SAMPLE -->
+<section>
+  <div class="container">
+    <div class="label">What you receive every Sunday</div>
+    <h2>Your weekly portrait.</h2>
+    <div class="portrait-sample">
+      <div class="portrait-week">Week 3 Portrait</div>
+      <div class="portrait-title">"The Week You Started Arguing With Your Father's Voice"</div>
+
+      <div class="portrait-section">
+        <div class="portrait-section-label">The Mirror</div>
+        <p>This week, you wrote about three separate situations where you felt overlooked. What you named as frustration was something older — the specific quality of not being believed by someone whose belief you needed.</p>
+        <p>The pattern: you make yourself smaller in the moments you most need to be heard. Then resent the people who couldn't hear you.</p>
+        <p>On Wednesday, you described a meeting where you had something important to say and didn't say it. You wrote: "I just let it go." You've written some version of that sentence seven times in three weeks.</p>
+      </div>
+
+      <div class="shadow-voice">
+        <div class="portrait-section-label">Your shadow speaks</div>
+        <p>"I learned early that taking up space was dangerous. I still believe that. I made you believe it too. But you're not eight anymore."</p>
+      </div>
+
+      <div class="portrait-section" style="margin-top:32px;">
+        <div class="portrait-section-label">Your question for the week ahead</div>
+        <div class="integration-q">
+          <p>In which relationship are you still waiting for permission that will never come?</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing">
+  <div class="container">
+    <div class="label">Pricing</div>
+    <h2>One decision.</h2>
+    <div class="pricing-card">
+      <div class="price-main">$27</div>
+      <div class="price-period">/month · cancel anytime</div>
+      <ul class="features">
+        <li>Daily precision journal prompt</li>
+        <li>AI analysis of every entry</li>
+        <li>Weekly Shadow Portrait (every Sunday)</li>
+        <li>Streak tracking + integration milestones</li>
+        <li>Full access to your journal archive</li>
+        <li>7-day free trial — no charge until Day 8</li>
+      </ul>
+      <a href="/quiz.html" class="btn-primary" style="width:100%;text-align:center;display:block;">Start Free — Take the Quiz First →</a>
+      <div class="price-or">or</div>
+      <a href="#annual" class="price-annual">$197/year — save $127 (lock in your rate)</a>
+      <div class="guarantee">7-day money-back guarantee. If you complete 7 entries and your portrait doesn't say something accurate about you that you haven't said out loud before — write to us. Full refund within 24 hours.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">ShadowMirror 🪞</div>
+  <div class="footer-links">
+    <a href="/quiz.html">Free Quiz</a>
+    <a href="https://buy.stripe.com/YOUR_PORTAL_LINK">Manage Subscription</a>
+    <a href="mailto:support@shadowmirror.com">Support</a>
+  </div>
+  <div class="footer-disclaimer">ShadowMirror is a journaling and reflection tool, not therapy or mental health treatment. If you are experiencing a mental health crisis, please contact a licensed professional or crisis line.</div>
+</footer>
+
+</body>
+</html>
