@@ -5,6 +5,7 @@ const cors = require('cors');
 const stripeWebhook = require('./routes/stripe-webhook');
 const journalRoutes = require('./routes/journal');
 const quizRoutes = require('./routes/quiz');
+const portalRoute = require('./routes/portal');
 const { startWeeklyPortraitJob } = require('./jobs/weeklyPortraits');
 const { startChurnPreventionJob } = require('./jobs/churnPrevention');
 
@@ -21,6 +22,7 @@ app.use(express.json({ limit: '10kb' }));
 // Routes
 app.use('/journal', journalRoutes);
 app.use('/quiz', quizRoutes);
+app.use('/portal', portalRoute);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }));
