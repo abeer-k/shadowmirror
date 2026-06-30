@@ -98,7 +98,7 @@ function buildCheckoutUrl({ email, firstName, archetype, q1, q2, q3, q4, q5 }) {
     'metadata[q5]': (q5 || '').substring(0, 200),
   });
   // Replace with your actual Stripe Payment Link
-  return `https://buy.stripe.com/6oUfZ9buE64H4k453H28800?${params.toString()}`;
+  return `https://buy.stripe.com/fZu3cn7eoakX2bW8fT28801?${params.toString()}`;
 }
 
 function scheduleSequenceEmails({ email, firstName, archetype, q5 }) {
